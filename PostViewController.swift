@@ -69,6 +69,7 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
         
         self.youTubeAuthURLmethod = URL(string: "\(googleAuthURL)&\(responseType)&\(clientID)&\(scope)&\(redirect+":\(scheme)")")
         print("auth url = \(googleAuthURL)&\(responseType)&\(clientID)&\(scope)&\(redirect+":\(scheme)")")
+        
         NotificationCenter.default.addObserver(self, selector: #selector(tokenRequest(_:)), name: Notification.Name("codeRequest"), object: nil)
         
         let safariVC = SFSafariViewController(url: youTubeAuthURLmethod)
@@ -85,8 +86,6 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
             return
         }
         
-        
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("codeRequest"), object: nil)
         dismiss(animated: false, completion: nil)
         
         authToken =  filterTokenResponse(tokenDataAsURL.absoluteString) { (success, error) in
