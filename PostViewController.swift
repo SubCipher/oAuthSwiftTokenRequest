@@ -13,11 +13,6 @@ import AVFoundation
 class PostViewController: UIViewController, SFSafariViewControllerDelegate {
     
     
-    //MARK:- Authentication token Reqest
-    //reference links
-    //https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller
-    //https://stackoverflow.com/questions/38818786/safariviewcontroller-how-to-grab-oauth-token-from-url
-
     
     let deviceSetting = VideoMemeDeviceSettings()
     weak var delegate: SFSafariViewControllerDelegate?
@@ -63,31 +58,37 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
         activityIndicatorView.isHidden = true
     }
     
-    
     //MARK:- Authentication token Reqest
+    //reference links
+    //https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller
+    //https://stackoverflow.com/questions/38818786/safariviewcontroller-how-to-grab-oauth-token-from-url
+    
+    
     @IBAction func authentication(_ sender: Any) {
         
-        self.youTubeAuthURLmethod = URL(string: "\(googleAuthURL)&\(responseType)&\(clientID)&\(scope)&\(redirect+":\(scheme)")")
+        self.youTubeAuthenticationMethod = URL(string: "\(googleAuthURL)&\(responseType)&\(clientID)&\(scope)&\(redirect+":\(scheme)")")
+        print("")
         print("auth url = \(googleAuthURL)&\(responseType)&\(clientID)&\(scope)&\(redirect+":\(scheme)")")
+        print("")
+        
         
         NotificationCenter.default.addObserver(self, selector: #selector(tokenRequest(_:)), name: Notification.Name("codeRequest"), object: nil)
         
-        let safariVC = SFSafariViewController(url: youTubeAuthURLmethod)
+        let safariVC = SFSafariViewController(url: youTubeAuthenticationMethod)
         safariVC.delegate = self
         self.present(safariVC, animated: true, completion: nil)
     }
     
     
     @objc func tokenRequest(_ notification : Notification) {
-        NotificationCenter.default.removeObserver(self, name: Notification.Name("codeRequest"), object: nil)
         
         guard let tokenDataAsURL = notification.object as? URL! else {
             print("got nothing")
             return
         }
         
-        dismiss(animated: false, completion: nil)
         
+        dismiss(animated: false, completion: nil)
         authToken =  filterTokenResponse(tokenDataAsURL.absoluteString) { (success, error) in
             if success {
                 
@@ -135,15 +136,19 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
     
     
     
-    
     //MARK:- Authorization Request For Token
     @IBAction func postVideoActionButton(_ sender: Any) {
         
         activityIndicatorView.isHidden = false
         activityIndicatorView.startAnimating()
         
-        postNewVideo(newVideoMeme) {(success,error) in
-            
+        
+        let tokenExchangeCode = "code=\(authToken)"
+        //let postURLasString = "\(baseURL)\(method)&\(part)"
+        let urlContructForTokenExchange = "\(baseURL)\(tokenExchangeMethod)&\(tokenExchangeCode)&\(clientID)&\(redirect)&(scope)&\(tokenExchangeGrantType)"
+        
+        
+        youTubePOSTRequest(urlContructForTokenExchange) {(success,error) in
             
             self.performUpdatesOnMainQueue {
                 
@@ -168,58 +173,46 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
                     let controller = self.storyboard!.instantiateViewController(withIdentifier: "NavigationController")
                     self.present(controller, animated: true, completion: nil)
                     
+                    /* working URL samples from auth playground
+                     code=4%2FhJIH8uIz_5Ha9Azmq_LrWHbKZzErDQ2mR84n8B77CIw&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=407408718192.apps.googleusercontent.com&client_secret=************&scope=&grant_type=authorization_code
+                     
+                     
+                     let postURLasString = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=Ks-_Mh1QhMc&key=AIzaSyBtQXRLuqWCG8XX78VyMU31bRcUFkcMUrU"
+                     
+                     https://developers.google.com/identity/protocols/OAuth2WebServer#formingtheurl
+                     
+                     */
                 }
             }
         }
     }
     
     
-    
-    func postNewVideo(_ videoToPost: VideoMemeDataModel.videoMeme, completionHandlerForPostNewVideo: @escaping (_ success: Bool,_ error: NSError?) -> Void) {
-        let tokenExchangeCode = "code=\(authToken)"
-        
-        
-        //let postURLasString = "\(baseURL)\(method)&\(part)"
-        let postURLasString = "\(baseURL)\(tokenExchangeMethod)&\(tokenExchangeCode)&\(clientID)&\(redirect)&(scope)&\(tokenExchangeGrantType)"
-        
-        /*
-         working URL samples from auth playground
-         code=4%2FhJIH8uIz_5Ha9Azmq_LrWHbKZzErDQ2mR84n8B77CIw&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=407408718192.apps.googleusercontent.com&client_secret=************&scope=&grant_type=authorization_code
-         
-         
-         let postURLasString = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=Ks-_Mh1QhMc&key=AIzaSyBtQXRLuqWCG8XX78VyMU31bRcUFkcMUrU"
-         
-         //https://developers.google.com/identity/protocols/OAuth2WebServer#formingtheurl
-         
-         */
+    func youTubePOSTRequest(_ urlAsString: String, completionHandlerForYouTubePOSTRequest: @escaping (_ success: Bool,_ error: NSError?) -> Void) {
         
         let jsonBody = ""
+        let request = formatRequest(urlAsString, jsonBody)
         
-        let request = formatRequest(postURLasString, jsonBody)
-        
-        let _ = taskForNewLocationPostMethod(request as URLRequest) { (response, error) in
+        let _ = taskForYouTubePOSTrequest(request as URLRequest) { (response, error) in
             if error == nil {
-                completionHandlerForPostNewVideo(true,nil)
+                completionHandlerForYouTubePOSTRequest(true,nil)
             } else {
                 
-                completionHandlerForPostNewVideo(false,NSError(domain: "URLRequest", code: 1, userInfo: [NSLocalizedDescriptionKey: "error downloading data"]))
+                completionHandlerForYouTubePOSTRequest(false,NSError(domain: "URLRequest", code: 1, userInfo: [NSLocalizedDescriptionKey: "error downloading data"]))
             }
         }
     }
     
-    
     //MARK: - Helper Method For formatting POST URLRequest
-    
-    
     
     func formatRequest(_ mutableString:String, _ jsonBody: String) -> URLRequest{
         
-        let request = URLRequest(url: URL(string:mutableString)!)
-        //       request.httpMethod = "POST"
-        //        request.addValue(authToken, forHTTPHeaderField: "code")
-        //        request.addValue(clientID, forHTTPHeaderField: "client_id")
-        //        request.addValue("com.StepwiseDesigns.MyGreatAppAdventure", forHTTPHeaderField: "redirect_url")
-        //        request.addValue("authorization_code", forHTTPHeaderField: "grant_type")
+        var request = URLRequest(url: URL(string:mutableString)!)
+        request.httpMethod = "POST"
+        request.addValue(authToken, forHTTPHeaderField: "code")
+        request.addValue(clientID, forHTTPHeaderField: "client_id")
+        request.addValue("com.StepwiseDesigns.VideoMeme", forHTTPHeaderField: "redirect_url")
+        request.addValue("authorization_code", forHTTPHeaderField: "grant_type")
         
         //request.addValue(apiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
         
@@ -227,11 +220,10 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
         //request.httpBody = jsonBody.data(using: String.Encoding.utf8)
         
         return request
-        
     }
     
-    func taskForNewLocationPostMethod(_ processedURL: URLRequest,
-                                      completionHandlerForParsePOST: @escaping ( _ results: AnyObject?, _ error: NSError?) -> Void) -> URLSessionDataTask {
+    func taskForYouTubePOSTrequest(_ processedURL: URLRequest,
+                                   completionHandlerForParsePOST: @escaping ( _ results: AnyObject?, _ error: NSError?) -> Void) -> URLSessionDataTask {
         
         
         let task = session.dataTask(with: processedURL as URLRequest) { (data, response, error) in
