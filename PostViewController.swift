@@ -1,6 +1,6 @@
 //
-//  VideoMemePostViewController.swift
-//  VideoMeme
+//  PostViewController.swift
+//
 //
 //  Created by knax on 6/22/17.
 //  Copyright © 2017 StepwiseDesigns. All rights reserved.
@@ -212,7 +212,7 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
         //       request.httpMethod = "POST"
         //        request.addValue(authToken, forHTTPHeaderField: "code")
         //        request.addValue(clientID, forHTTPHeaderField: "client_id")
-        //        request.addValue("com.StepwiseDesigns.VideoMeme", forHTTPHeaderField: "redirect_url")
+        //        request.addValue("com.StepwiseDesigns.MyGreatAppAdventure", forHTTPHeaderField: "redirect_url")
         //        request.addValue("authorization_code", forHTTPHeaderField: "grant_type")
         
         //request.addValue(apiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
