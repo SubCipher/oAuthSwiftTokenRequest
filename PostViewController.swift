@@ -144,8 +144,8 @@ class PostViewController: UIViewController, SFSafariViewControllerDelegate {
         
         
         let tokenExchangeCode = "code=\(authToken)"
-        //let postURLasString = "\(baseURL)\(method)&\(part)"
-        let urlContructForTokenExchange = "\(baseURL)\(tokenExchangeMethod)&\(tokenExchangeCode)&\(clientID)&\(redirect)&(scope)&\(tokenExchangeGrantType)"
+        let urlContructForTokenExchange = "\(googleAuthURL)\(tokenExchangeMethod)&\(tokenExchangeCode)&\(clientID)&\(redirect)&\(scope)&\(tokenExchangeGrantType)"
+
         
         
         youTubePOSTRequest(urlContructForTokenExchange) {(success,error) in
