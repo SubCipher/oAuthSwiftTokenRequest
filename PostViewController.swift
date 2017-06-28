@@ -12,6 +12,13 @@ import AVFoundation
 
 class PostViewController: UIViewController, SFSafariViewControllerDelegate {
     
+    
+    //MARK:- Authentication token Reqest
+    //reference links
+    //https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller
+    //https://stackoverflow.com/questions/38818786/safariviewcontroller-how-to-grab-oauth-token-from-url
+
+    
     let deviceSetting = VideoMemeDeviceSettings()
     weak var delegate: SFSafariViewControllerDelegate?
     
